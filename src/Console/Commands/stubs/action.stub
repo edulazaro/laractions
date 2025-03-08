@@ -1,0 +1,13 @@
+<?php
+
+namespace {{ namespace }};
+
+use EduLazaro\Laractions\Action;
+
+class {{ class }} extends Action
+{
+    public function run(...$params)
+    {
+        // Implement action logic here
+    }
+}

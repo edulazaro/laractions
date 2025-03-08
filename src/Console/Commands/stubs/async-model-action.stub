@@ -1,0 +1,24 @@
+<?php
+
+namespace {{ namespace }};
+
+use EduLazaro\Laractions\Action;
+use EduLazaro\Laractions\Concerns\IsAsync;
+use App\Models\{{ model }};
+
+class {{ class }} extends Action
+{
+    use IsAsync;
+
+    protected {{ modelVariable }} ${{ modelVariable }};
+
+    public function __construct({{ model }} ${{ modelVariable }})
+    {
+        $this->{{ modelVariable }} = ${{ modelVariable }};
+    }
+
+    public function run(...$params)
+    {
+        // Implement async action logic for {{ modelVariable }} here
+    }
+}
