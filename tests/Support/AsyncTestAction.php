@@ -3,13 +3,14 @@
 namespace EduLazaro\Laractions\Tests\Support;
 
 use EduLazaro\Laractions\Action;
-use EduLazaro\Laractions\Concerns\HasActions;
-use Illuminate\Validation\ValidationException;
+use EduLazaro\Laractions\Concerns\IsAsync;
 use EduLazaro\Laractions\Tests\Support\TestEntity;
+use Illuminate\Contracts\Queue\ShouldQueue;
 
-class TestAction extends Action
+class AsyncTestAction extends Action 
 {
     protected TestEntity $testEntity;
+
     public string $foo = '';
 
     protected array $rules = [

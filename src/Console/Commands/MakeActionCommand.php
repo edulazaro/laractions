@@ -1,64 +1,120 @@
+<?php
 
-    <?php
+namespace EduLazaro\Laractions\Console\Commands;
 
-    namespace EduLazaro\Laractions\Console\Commands;
-    
-    use Illuminate\Console\Command;
-    use Illuminate\Filesystem\Filesystem;
-    
-    class MakeActionCommand extends Command
+use Illuminate\Console\GeneratorCommand;
+use Illuminate\Support\Str;
+
+class MakeActionCommand extends GeneratorCommand
+{
+    /**
+     * The console command name.
+     *
+     * @var string
+     */
+    protected $signature = 'make:action {name} {--model=}';
+
+    /**
+     * The console command description.
+     *
+     * @var string
+     */
+    protected $description = 'Create a new Action class';
+
+    /**
+     * The type of class being generated.
+     *
+     * @var string
+     */
+    protected $type = 'Action';
+
+    /**
+     * Get the stub file for the generator.
+     *
+     * @return string
+     */
+    protected function getStub()
     {
-        protected $signature = 'make:action {name} {--model=} {--async}';
-    
-        protected $description = 'Create a new Action class';
-    
-        public function handle()
-        {
-            $name = $this->argument('name');
-            $model = $this->option('model');
-            $isAsync = $this->option('async');
-    
-            $namespace = 'App\\Actions';
-            $class = class_basename($name);
-            $modelNamespace = $model ? "App\\Models\\$model" : null;
-            $modelVariable = $model ? lcfirst(class_basename($model)) : null;
-    
-            $stubDirectory = base_path('app/Console/Commands/stubs/');
-    
-            if ($model) {
-                $stubFile = $isAsync ? 'async-model-action.stub' : 'model-action.stub';
-                $namespace .= "\\$model"; // Change namespace to include model folder
-                $folderPath = app_path("Actions/{$model}"); // Actions inside model-based folders
-            } else {
-                $stubFile = $isAsync ? 'async-action.stub' : 'action.stub';
-                $folderPath = app_path("Actions"); // General actions folder
-            }
-    
-            $stubPath = $stubDirectory . $stubFile;
-    
-            if (!file_exists($stubPath)) {
-                $this->error("Stub file not found: $stubPath");
-                return;
-            }
-    
-            $stub = file_get_contents($stubPath);
-            $stub = str_replace('{{ namespace }}', $namespace, $stub);
-            $stub = str_replace('{{ class }}', $class, $stub);
-            $stub = str_replace('{{ model }}', $modelNamespace ?? '', $stub);
-            $stub = str_replace('{{ modelVariable }}', $modelVariable ?? '', $stub);
-    
-            // Define file path
-            $path = "{$folderPath}/{$class}.php";
-    
-            if (file_exists($path)) {
-                $this->error("Action already exists: $path");
-                return;
-            }
-    
-            (new Filesystem)->ensureDirectoryExists($folderPath);
-            file_put_contents($path, $stub);
-    
-            $this->info("Action created successfully: $path");
+        return $this->option('model')
+            ? __DIR__ . '/stubs/model-action.stub'
+            : __DIR__ . '/stubs/action.stub';
+    }
+
+    /**
+     * Get the default namespace for the class.
+     *
+     * @param string $rootNamespace
+     * @return string
+     */
+    protected function getDefaultNamespace($rootNamespace)
+    {
+        if ($this->option('model')) {
+            $modelFullName = trim($this->option('model'), '\\');
+            $modelShortName = class_basename($modelFullName);
+
+            return "{$rootNamespace}\\Actions\\{$modelShortName}";
         }
-    }    
+
+        return "{$rootNamespace}\\Actions";
+    }
+
+    /**
+     * Replace placeholders inside the stub file.
+     *
+     * @param string $stub
+     * @param string $name
+     * @return string
+     */
+    protected function replaceClass($stub, $name)
+    {
+        $actionClass = class_basename($name);
+        $namespace = $this->getNamespace($name);
+
+        if ($this->option('model')) {
+            $modelFullName = trim($this->option('model'), '\\');
+
+            // If no namespace is provided, assume it's under App\Models
+            if (!str_contains($modelFullName, '\\')) {
+                $modelFullName = 'App\\Models\\' . $modelFullName;
+            }
+
+            // Extract base model class name
+            $modelName = class_basename($modelFullName);
+            $modelVariable = lcfirst($modelName);
+        } else {
+            $modelFullName = null;
+            $modelName = null;
+            $modelVariable = null;
+        }
+
+        return str_replace(
+            ['{{ namespace }}', '{{ class }}', '{{ modelFullName }}', '{{ modelName }}', '{{ modelVariable }}'],
+            [$namespace, $actionClass, $modelFullName ?? '', $modelName ?? '', $modelVariable ?? ''],
+            $stub
+        );
+    }
+
+    /**
+     * Get the correct file path where the action should be created.
+     *
+     * @param string $name
+     * @return string
+     */
+    protected function getPath($name)
+    {
+        // Remove the root namespace (e.g., "App\") from the class name
+        $name = Str::replaceFirst($this->rootNamespace(), '', $name);
+        $name = str_replace('\\', '/', $name);
+
+        // Standard actions go directly inside "app/Actions/"
+        if (!$this->option('model')) {
+            return app_path("{$name}.php");
+        }
+
+        // Model-based actions go inside "app/Actions/ModelShortName/"
+        $modelFullName = trim($this->option('model'), '\\');
+        $modelShortName = class_basename($modelFullName);
+
+        return app_path("Actions/{$modelShortName}/" . class_basename($name) . ".php");
+    }
 }

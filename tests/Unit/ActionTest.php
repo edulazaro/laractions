@@ -2,14 +2,15 @@
 
 namespace EduLazaro\Laractions\Tests\Unit;
 
+use EduLazaro\Laractions\Tests\BaseTestCase;
 use EduLazaro\Laractions\Tests\Support\TestAction;
+use EduLazaro\Laractions\Tests\Support\ExtendedTestAction;
+use EduLazaro\Laractions\Tests\Support\MultiplyNumbersAction;
 use EduLazaro\Laractions\Tests\Support\TestEntity;
-use Illuminate\Support\Facades\Log;
 use Illuminate\Validation\ValidationException;
-use InvalidArgumentException;
-use PHPUnit\Framework\TestCase;
 
-class ActionTest extends TestCase
+
+class ActionTest extends BaseTestCase
 {
     /** @test */
     public function it_can_create_an_action_instance()
@@ -19,83 +20,124 @@ class ActionTest extends TestCase
     }
 
     /** @test */
-    public function it_can_associate_an_entity_with_for_method()
+    public function it_can_run_a_standalone_action_with_valid_data()
     {
         $action = TestAction::create();
-        $entity = new TestEntity();
+        $result = $action->run(['name' => 'John Doe', 'email' => 'john@example.com']);
 
-        $action->for($entity);
+        $this->assertEquals('John Doe_john@example.com', $result);
+    }
+
+    /** @test */
+    public function it_throws_validation_exception_for_invalid_data()
+    {
+        $this->expectException(ValidationException::class);
+
+        $action = TestAction::create();
+        $action->run(['name' => 'John Doe', 'email' => 'invalid-email']);
+    }
+
+    /** @test */
+    public function it_can_validate_and_run_multiply_numbers_action()
+    {
+        $action = MultiplyNumbersAction::create();
+        $result = $action->run(['a' => 5, 'b' => 3]);
+
+        $this->assertEquals(15, $result);
+    }
+
+    /** @test */
+    public function it_throws_validation_exception_for_invalid_multiply_numbers_action()
+    {
+        $this->expectException(ValidationException::class);
+
+        $action = MultiplyNumbersAction::create();
+        $action->run(['a' => 'five', 'b' => 3]); // 'a' is not numeric
+    }
+
+    /** @test */
+    public function it_sets_and_gets_an_actionable_entity()
+    {
+        $entity = new TestEntity();
+        $action = TestAction::create()->for($entity);
 
         $this->assertSame($entity, $action->getActionable());
     }
 
     /** @test */
-    public function it_throws_exception_if_for_method_receives_non_object()
+    public function it_can_set_parameters_using_with_method()
     {
-        $this->expectException(\TypeError::class);
-    
         $action = TestAction::create();
-        $action->for("not-an-object");
-    }
+        $action->with(['foo' => 'bar']);
 
-    /** @test */
-    public function it_can_inject_properties_with_with_method_and_array_params()
-    {
-        $action = TestAction::create()->with(['foo' => 'bar']);
         $this->assertEquals('bar', $action->foo);
     }
 
     /** @test */
-    public function it_can_inject_properties_with_with_method_and_named_params()
+    public function it_can_set_parameters_using_with_method_named_params()
     {
-        $action = TestAction::create()->with(foo: 'bar');
+        $action = TestAction::create();
+        $action->with(foo: 'bar');
+
         $this->assertEquals('bar', $action->foo);
     }
 
-    /** @test */
-
-    public function it_validates_input_parameters_before_execution()
-    {
-        $this->expectException(ValidationException::class);
-
-        $action = new TestAction();
-        $action->run(['invalid_key' => 'value']);
-
-    }
 
     /** @test */
-    /*
-    public function it_logs_messages_correctly()
+    public function it_can_execute_action_using_action_method_with_class()
     {
-        Log::shouldReceive('info')
-            ->once()
-            ->with('[Action: EduLazaro\Laractions\Tests\Support\TestAction] Test log message', ['key' => 'value']);
+        $entity = new TestEntity();
 
-        $action = new TestAction();
-        $this->invokeMethod($action, 'log', ['Test log message', ['key' => 'value']]);
+        $action = $entity->action(TestAction::class);
+        $result = $action->run(['name' => 'Alice', 'email' => 'alice@example.com']);
+
+        $this->assertEquals('Alice_alice@example.com', $result);
     }
-        */
 
     /** @test */
-    /*
-    public function it_executes_the_action()
+    public function it_can_execute_action_using_action_method_with_key()
     {
-        $action = new TestAction();
-        $result = $action->run(['required_key' => 'valid']);
+        $entity = new TestEntity();
+        $result = $entity->action('test_action')->run(['name' => 'Bob', 'email' => 'bob@example.com']);
 
-        $this->assertEquals("Executed with valid", $result);
+        $this->assertEquals('Bob_bob@example.com', $result);
     }
-        */
 
-    /** Helper to invoke protected/private methods in tests */
-    /*
-    protected function invokeMethod(&$object, $methodName, array $parameters = [])
+        /** @test */
+        public function it_can_execute_action_using_action_method_with_key_on_extended_action()
+        {
+            $entity = new TestEntity();
+            $result = $entity->action('extended_test_action')->run(['name' => 'Bob', 'email' => 'bob@example.com']);
+    
+            $this->assertEquals('Bob_bob@example.com_ok', $result);
+        }
+
+    /** @test */
+    public function it_can_execute_action_using_action_method_with_named_params()
     {
-        $reflection = new \ReflectionClass(get_class($object));
-        $method = $reflection->getMethod($methodName);
-        $method->setAccessible(true);
+        $entity = new TestEntity();
 
-        return $method->invokeArgs($object, $parameters);
+        $action = $entity->action('test_action');
+        $result = $action->run(name: 'Bob', email: 'bob@example.com');
+
+        $this->assertEquals('Bob_bob@example.com', $result);
     }
-    */
+
+    /** @test */
+    public function it_can_resolve_dynamic_actionable_name()
+    {
+        $entity = new TestEntity();
+        $action = TestAction::create()->for($entity);
+        
+        $this->assertSame($entity, $action->getEntity());
+    }
+
+    /** @test */
+    public function it_can_resolve_dynamic_actionable_name_in_extended_action()
+    {
+        $entity = new TestEntity();
+        $action = ExtendedTestAction::create()->for($entity);
+        
+        $this->assertSame($entity, $action->getEntity());
+    }
 }

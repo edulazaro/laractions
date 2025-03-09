@@ -6,7 +6,7 @@ use EduLazaro\Laractions\Action;
 
 class {{ class }} extends Action
 {
-    public function run(...$params)
+    public function handle()
     {
         // Implement action logic here
     }
