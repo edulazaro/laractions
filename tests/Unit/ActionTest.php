@@ -103,14 +103,14 @@ class ActionTest extends BaseTestCase
         $this->assertEquals('Bob_bob@example.com', $result);
     }
 
-        /** @test */
-        public function it_can_execute_action_using_action_method_with_key_on_extended_action()
-        {
-            $entity = new TestEntity();
-            $result = $entity->action('extended_test_action')->run(['name' => 'Bob', 'email' => 'bob@example.com']);
-    
-            $this->assertEquals('Bob_bob@example.com_ok', $result);
-        }
+    /** @test */
+    public function it_can_execute_action_using_action_method_with_key_on_extended_action()
+    {
+        $entity = new TestEntity();
+        $result = $entity->action('extended_test_action')->run(['name' => 'Bob', 'email' => 'bob@example.com']);
+
+        $this->assertEquals('Bob_bob@example.com_ok', $result);
+    }
 
     /** @test */
     public function it_can_execute_action_using_action_method_with_named_params()
@@ -128,7 +128,7 @@ class ActionTest extends BaseTestCase
     {
         $entity = new TestEntity();
         $action = TestAction::create()->for($entity);
-        
+
         $this->assertSame($entity, $action->getEntity());
     }
 
@@ -137,7 +137,34 @@ class ActionTest extends BaseTestCase
     {
         $entity = new TestEntity();
         $action = ExtendedTestAction::create()->for($entity);
-        
+
         $this->assertSame($entity, $action->getEntity());
+    }
+
+    /** @test */
+    public function it_can_resolve_actions_in_model_actions_array()
+    {
+        $entity = new TestEntity();
+        $result =  $entity->action('test_action')->run(['name' => 'Bob', 'email' => 'bob@example.com']);
+
+        $this->assertEquals('Bob_bob@example.com', $result);
+    }
+
+    /** @test */
+    public function it_can_resolve_actions_in_model_actions_array_with_named_params()
+    {
+        $entity = new TestEntity();
+        $result =  $entity->action('test_action')->run(name: 'Bob', email: 'bob@example.com');
+    
+        $this->assertEquals('Bob_bob@example.com', $result);
+    }
+
+    /** @test */
+    public function it_can_resolve_actions_in_model_actions_array_with_standard_params()
+    {
+        $entity = new TestEntity();
+        $result =  $entity->action('test_action')->run( 'Bob', 'bob@example.com');
+    
+        $this->assertEquals('Bob_bob@example.com', $result);
     }
 }

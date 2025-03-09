@@ -221,7 +221,7 @@ abstract class Action
 
         if (array_key_first($params) == 0) {
 
-            $reflection = new ReflectionMethod($this, 'action');
+            $reflection = new ReflectionMethod($this, 'handle');
             $paramNames = [];
 
             foreach ($reflection->getParameters() as $index => $param) {
