@@ -18,6 +18,10 @@ class LaractionsServiceProvider extends ServiceProvider
         if ($this->app->runningInConsole()) {
             $this->commands([MakeActionCommand::class]);
             $this->commands([ListActionsCommand::class]);
+
+            $this->publishes([
+                __DIR__.'/../database/migrations' => database_path('migrations'),
+            ], 'laractions-migrations');
         }
     }
 

@@ -4,11 +4,13 @@ namespace EduLazaro\Laractions\Tests\Unit;
 
 use EduLazaro\Laractions\Tests\BaseTestCase;
 use EduLazaro\Laractions\Tests\Support\TestAction;
+use EduLazaro\Laractions\Tests\Support\TestModelEntity;
 use EduLazaro\Laractions\Tests\Support\ExtendedTestAction;
 use EduLazaro\Laractions\Tests\Support\MultiplyNumbersAction;
 use EduLazaro\Laractions\Tests\Support\TestEntity;
 use Illuminate\Validation\ValidationException;
-
+use EduLazaro\Laractions\ActionTrace;
+use Illuminate\Support\Facades\Schema;
 
 class ActionTest extends BaseTestCase
 {
@@ -59,7 +61,7 @@ class ActionTest extends BaseTestCase
     public function it_sets_and_gets_an_actionable_entity()
     {
         $entity = new TestEntity();
-        $action = TestAction::create()->for($entity);
+        $action = TestAction::create()->on($entity);
 
         $this->assertSame($entity, $action->getActionable());
     }
@@ -127,7 +129,7 @@ class ActionTest extends BaseTestCase
     public function it_can_resolve_dynamic_actionable_name()
     {
         $entity = new TestEntity();
-        $action = TestAction::create()->for($entity);
+        $action = TestAction::create()->on($entity);
 
         $this->assertSame($entity, $action->getEntity());
     }
@@ -136,7 +138,7 @@ class ActionTest extends BaseTestCase
     public function it_can_resolve_dynamic_actionable_name_in_extended_action()
     {
         $entity = new TestEntity();
-        $action = ExtendedTestAction::create()->for($entity);
+        $action = ExtendedTestAction::create()->on($entity);
 
         $this->assertSame($entity, $action->getEntity());
     }
@@ -166,5 +168,55 @@ class ActionTest extends BaseTestCase
         $result =  $entity->action('test_action')->run( 'Bob', 'bob@example.com');
     
         $this->assertEquals('Bob_bob@example.com', $result);
+    }
+
+    /** @test */
+    public function it_does_not_trace_unless_explicitly_enabled()
+    {
+        $entity = TestModelEntity::create();
+
+        $entity->action('test_action')->run(['name' => 'Silent', 'email' => 'no-trace@example.com']);
+
+        $this->assertDatabaseMissing('action_traces', [
+            'action' => TestAction::class,
+        ]);
+    }
+
+    /** @test */
+    public function it_traces_action_when_trace_is_enabled()
+    {
+        $entity = TestModelEntity::create();
+
+        $entity->action('test_action')
+            ->trace()
+            ->run(['name' => 'Traced', 'email' => 'yes@example.com']);
+
+        $this->assertDatabaseHas('action_traces', [
+            'action' => TestAction::class,
+        ]);
+    }
+
+    /** @test */
+    public function it_stores_actor_and_target_when_tracing()
+    {
+        $entity = TestModelEntity::create();
+    
+        $user = new class {
+            public function getMorphClass() { return 'user'; }
+            public function getKey() { return 123; }
+        };
+    
+        $entity->action('test_action')
+            ->trace()
+            ->setActor($user)
+            ->on($entity)
+            ->run(['name' => 'Traced', 'email' => 'yes@example.com']);
+    
+        $trace = ActionTrace::latest()->first();
+    
+        $this->assertEquals('user', $trace->actor_type);
+        $this->assertEquals(123, $trace->actor_id);
+        $this->assertEquals(get_class($entity), $trace->target_type);
+        $this->assertEquals($entity->id, $trace->target_id); // optional but precise
     }
 }

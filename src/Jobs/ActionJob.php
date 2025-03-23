@@ -89,7 +89,7 @@ class ActionJob implements ShouldQueue
             $this->action->run($this->params);
         } else if ($this->actionableType && $this->actionableId) {
             $action = app($this->actionClass);
-            $action->for($this->actionableType::find($this->actionableId)); 
+            $action->on($this->actionableType::find($this->actionableId)); 
         }
     }
 }

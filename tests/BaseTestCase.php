@@ -2,25 +2,38 @@
 
 namespace EduLazaro\Laractions\Tests;
 
-use Orchestra\Testbench\TestCase as Testbench;
+use Illuminate\Foundation\Testing\RefreshDatabase;
+use Orchestra\Testbench\TestCase as OrchestraTestCase;
+use EduLazaro\Laractions\LaractionsServiceProvider;
 
-abstract class BaseTestCase extends Testbench
+abstract class BaseTestCase extends OrchestraTestCase
 {
-    /**
-     * Set up the test environment.
-     */
-    protected function setUp(): void
-    {
-        parent::setUp();
-    }
+    use RefreshDatabase;
 
-    /**
-     * Load package-specific service providers.
-     */
     protected function getPackageProviders($app)
     {
         return [
-
+            LaractionsServiceProvider::class,
         ];
+    }
+
+    protected function getEnvironmentSetUp($app)
+    {
+        $app['config']->set('database.default', 'sqlite');
+        $app['config']->set('database.connections.sqlite', [
+            'driver'   => 'sqlite',
+            'database' => ':memory:',
+            'prefix'   => '',
+        ]);
+    }
+
+    protected function setUp(): void
+    {
+        parent::setUp();
+
+        $this->loadMigrationsFrom(__DIR__ . '/../database/migrations');
+        $this->loadMigrationsFrom(__DIR__ . '/database/migrations');
+
+        $this->artisan('migrate')->run();
     }
 }

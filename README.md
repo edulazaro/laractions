@@ -159,7 +159,7 @@ class User extends Model
     use HasActions;
 
     protected array $actions = [
-        'sendEmail' => SendEmailAction::class,
+        'send_email' => SendEmailAction::class,
     ];
 }
 ```
@@ -167,7 +167,7 @@ class User extends Model
 Now, you can execute the action using:
 
 ```php
-$user->action('sendEmail')->run('user@example.com', 'Welcome!', 'Hello User');
+$user->action('send_email')->run('user@example.com', 'Welcome!', 'Hello User');
 ```
 
 Alternatively, you can still call the action class directly so you don't have to define the action inside the model:

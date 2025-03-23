@@ -49,9 +49,9 @@ trait HasActions
         }
 
         if (App::runningUnitTests() && isset($this->mockedActions[$actionClass])) {
-            return $this->mockedActions[$actionClass]->for($this);
+            return $this->mockedActions[$actionClass]->on($this);
         }
 
-        return App::makeWith($actionClass, $params)->for($this);
+        return App::makeWith($actionClass, $params)->on($this);
     }
 }

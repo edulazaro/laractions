@@ -9,6 +9,8 @@ use Illuminate\Validation\ValidationException;
 use Illuminate\Support\Facades\Log;
 use ReflectionMethod;
 use LogicException;
+use Throwable;
+use EduLazaro\Laractions\ActionTrace;
 use EduLazaro\Laractions\Jobs\ActionJob;
 
 /**
@@ -34,8 +36,14 @@ abstract class Action
     /** @var string|null The queue name */
     protected ?string $queue = null;
 
+    /** @var object|null The actor (e.g., User or system) */
+    protected ?object $actor = null;
+
     /** @var bool Whether logging is enabled */
     protected bool $loggingEnabled = false;
+
+    /** @var bool Whether tracing is enabled */
+    protected bool $tracingEnabled = false;
 
     public function __invoke(...$params): mixed
     {
@@ -124,6 +132,18 @@ abstract class Action
     }
 
     /**
+     * Enable tracing.
+     *
+     * @param bool $enabled database tracing.
+     * @return static The modified action instance.
+     */
+    public function trace(bool $enabled = true): static
+    {
+        $this->tracingEnabled = $enabled;
+        return $this;
+    }
+
+    /**
      * Validate input parameters before execution.
      *
      * @param array $params Parameters to validate.
@@ -149,7 +169,7 @@ abstract class Action
      * @param object $actionable The entity to associate with the action.
      * @return $this
      */
-    public function for(object $actionable): static
+    public function on(object $actionable): static
     {
         $this->actionable = $actionable;
 
@@ -166,6 +186,18 @@ abstract class Action
             }
         }
 
+        return $this;
+    }
+
+    /**
+     * Set the actor who is performing the action.
+     *
+     * @param object $actor The actor (usually a User or service).
+     * @return static
+     */
+    public function setActor(object $actor): static
+    {
+        $this->actor = $actor;
         return $this;
     }
 
@@ -206,6 +238,27 @@ abstract class Action
         return $this->actionable;
     }
 
+
+    /**
+     * Record an action trace entry into the database.
+     *
+     * @param array $params The parameters passed to the action.
+     * @param bool $success Whether the action executed successfully.
+     * @param string|null $reason Optional reason for failure or additional context.
+     * @return void
+     */
+    protected function recordTrace(array $params): void
+    {
+        ActionTrace::create([
+            'actor_type' => $this->actor?->getMorphClass(),
+            'actor_id' => $this->actor?->getKey(),
+            'target_type' => $this->actionable?->getMorphClass(),
+            'target_id' => $this->actionable?->getKey(),
+            'action' => static::class,
+            'params' => $params,
+        ]);
+    }
+
     /**
      * Execute the action.
      * Runs validation and passes the validated data to `action()`.
@@ -234,7 +287,17 @@ abstract class Action
         $this->validate($params);
 
         if (method_exists($this, 'handle')) {
-            return $this->handle(...$params);
+            try {
+                $result = $this->handle(...$params);
+
+                if ($this->tracingEnabled) {
+                    $this->recordTrace($params);
+                }
+
+                return $result;
+            } catch (Throwable $e) {
+                throw $e;
+            }
         }
 
         throw new LogicException("The action class " . static::class . " must implement a `action` method.");
