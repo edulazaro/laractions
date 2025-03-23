@@ -278,6 +278,27 @@ SendEmailAction::create()
 
 Logs will be written to Laravel's log files.
 
+
+## Enabling Tracing
+
+Tracing is disabled by default. You can enable it per action like this:
+
+```php
+SendEmailAction::create()
+    ->trace()
+    ->run('user@example.com', 'Welcome!', 'Hello!');
+```
+
+You can assign the actor and actionable model like so:
+
+```php
+SendEmailAction::create()
+    ->setActor($user)
+    ->on($targetModel)
+    ->trace()
+    ->run($params);
+```
+
 ## License
 
 Laractions is open-sourced software licensed under the [MIT license](LICENSE.md).
