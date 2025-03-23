@@ -195,7 +195,7 @@ abstract class Action
      * @param object $actor The actor (usually a User or service).
      * @return static
      */
-    public function setActor(object $actor): static
+    public function actor(object $actor): static
     {
         $this->actor = $actor;
         return $this;

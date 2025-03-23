@@ -208,7 +208,7 @@ class ActionTest extends BaseTestCase
     
         $entity->action('test_action')
             ->trace()
-            ->setActor($user)
+            ->actor($user)
             ->on($entity)
             ->run(['name' => 'Traced', 'email' => 'yes@example.com']);
     

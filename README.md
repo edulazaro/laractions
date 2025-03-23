@@ -278,6 +278,29 @@ SendEmailAction::create()
 
 Logs will be written to Laravel's log files.
 
+## Acting as an Actor
+
+You can make any model an actor (like a User) by using the `IsActor` trait:
+
+```php
+use EduLazaro\Laractions\Concerns\IsActor;
+
+class User extends Model
+{
+    use IsActor;
+}
+```
+
+Then, call actions like this:
+
+```php
+$user->act(SendInvoiceAction::class)
+     ->on($order)
+     ->trace()
+     ->run();
+```
+
+This automatically sets the actor on the action before executing it.
 
 ## Enabling Tracing
 
@@ -293,10 +316,19 @@ You can assign the actor and actionable model like so:
 
 ```php
 SendEmailAction::create()
-    ->setActor($user)
+    ->actor($user)
     ->on($targetModel)
     ->trace()
     ->run($params);
+```
+
+Here is an traced action started by an actor:
+
+```php
+$user->act(SendInvoiceAction::class)
+     ->on($order)
+     ->trace()
+     ->run();
 ```
 
 ## License
