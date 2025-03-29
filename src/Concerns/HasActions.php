@@ -11,6 +11,11 @@ use Exception;
 trait HasActions
 {
     /**
+     * @var array $actions Stores the actions mapping
+     */
+    protected array $actions = [];
+
+    /**
      * @var array $mockedActions Stores mocked action instances for testing purposes.
      */
     protected array $mockedActions = [];
