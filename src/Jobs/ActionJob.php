@@ -16,7 +16,7 @@ class ActionJob implements ShouldQueue
     use Dispatchable, InteractsWithQueue, Queueable;
 
     /**  @var Action|null The action instance if not using a model */
-    public ?Action $action;
+    public ?Action $action = null;
 
     /** @var string The fully qualified class name of the action  */
     public string $actionClass;
@@ -32,7 +32,7 @@ class ActionJob implements ShouldQueue
 
     /** @var int Number of times the job should retry */
     public int $tries = 1;
-    
+
 
     /**
      * Create a new job instance.
@@ -49,9 +49,9 @@ class ActionJob implements ShouldQueue
         if ($action->getActionable() instanceof Model) {
             $this->actionableType = get_class($action->getActionable());
             $this->actionableId = $action->getActionable()->getKey();
-        } else {
-            $this->action = $action;
         }
+
+        $this->action = $action;
     }
 
     /**
@@ -85,11 +85,13 @@ class ActionJob implements ShouldQueue
      */
     public function handle()
     {
-        if ($this->action) {
-            $this->action->run($this->params);
-        } else if ($this->actionableType && $this->actionableId) {
-            $action = app($this->actionClass);
-            $action->on($this->actionableType::find($this->actionableId)); 
+        $action = $this->action ? $this->action : app($this->actionClass);
+
+
+        if ($this->actionableType && $this->actionableId) {
+            $action->on($this->actionableType::find($this->actionableId));
         }
+
+        $action->run($this->params);
     }
 }
