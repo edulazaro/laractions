@@ -33,7 +33,6 @@ class ActionJob implements ShouldQueue
     /** @var int Number of times the job should retry */
     public int $tries = 1;
 
-
     /**
      * Create a new job instance.
      *

@@ -171,6 +171,15 @@ class ActionTest extends BaseTestCase
     }
 
     /** @test */
+    public function it_can_resolve_actions_in_model_actions_array_with_standard_params_keeping_default_values()
+    {
+        $entity = new TestEntity();
+        $result =  $entity->action('test_action_default_value')->run( 'Bob');
+    
+        $this->assertEquals('Bob_bob@example.com', $result);
+    }
+
+    /** @test */
     public function it_does_not_trace_unless_explicitly_enabled()
     {
         $entity = TestModelEntity::create();

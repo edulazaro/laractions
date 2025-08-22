@@ -5,7 +5,7 @@ namespace EduLazaro\Laractions\Tests\Support;
 use EduLazaro\Laractions\Action;
 use EduLazaro\Laractions\Tests\Support\TestEntity;
 
-class TestAction extends Action
+class TestActionDefaultValue extends Action
 {
     protected TestEntity $testEntity;
     public string $foo = '';
@@ -20,7 +20,7 @@ class TestAction extends Action
         return $this->actionable;
     } 
 
-    protected function handle(string $name, string $email): string
+    protected function handle(string $name, string $email = 'bob@example.com'): string
     {
         return $name . '_' . $email;
     }
