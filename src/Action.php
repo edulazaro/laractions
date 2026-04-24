@@ -269,7 +269,7 @@ abstract class Action
     public function run(mixed ...$params): mixed
     {
         // Allow: run(['k'=>v]) or run('a','b') or run(name:'a')
-        if (count($params) === 1 && is_array($params[0])) {
+        if (count($params) === 1 && array_key_exists(0, $params) && is_array($params[0])) {
             $params = $params[0];
         }
 
@@ -281,7 +281,7 @@ abstract class Action
         $refParams  = $reflection->getParameters();
 
         // Detect if $params is associative (PHP named args end up as assoc)
-        $isAssoc    = is_array($params) && array_keys($params) !== range(0, count($params) - 1);
+        $isAssoc    = is_array($params) && !array_is_list($params);
         $named      = $isAssoc ? $params : [];
         $positional = $isAssoc ? [] : (is_array($params) ? array_values($params) : []);
 

@@ -209,23 +209,33 @@ class ActionTest extends BaseTestCase
     public function it_stores_actor_and_target_when_tracing()
     {
         $entity = TestModelEntity::create();
-    
+
         $user = new class {
             public function getMorphClass() { return 'user'; }
             public function getKey() { return 123; }
         };
-    
+
         $entity->action('test_action')
             ->trace()
             ->actor($user)
             ->on($entity)
             ->run(['name' => 'Traced', 'email' => 'yes@example.com']);
-    
+
         $trace = ActionTrace::latest()->first();
-    
+
         $this->assertEquals('user', $trace->actor_type);
         $this->assertEquals(123, $trace->actor_id);
         $this->assertEquals(get_class($entity), $trace->target_type);
         $this->assertEquals($entity->id, $trace->target_id); // optional but precise
+    }
+
+    /** @test */
+    public function it_can_run_with_a_single_named_argument()
+    {
+        $action = \EduLazaro\Laractions\Tests\Support\TestActionDefaultValue::create();
+
+        $result = $action->run(name: 'Alice');
+
+        $this->assertEquals('Alice_bob@example.com', $result);
     }
 }

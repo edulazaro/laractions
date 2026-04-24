@@ -39,12 +39,16 @@ composer require edulazaro/laractions
 
 Once installed, the package will be available in your Laravel application.
 
+## Naming Convention
+
+Action class names drop the `Action` suffix because the `App\Actions\*` namespace already carries the intent — just like Laravel uses `App\Jobs\SendEmail` rather than `App\Jobs\SendEmailJob`. The `make:action` generator strips a trailing "Action" automatically, so both `php artisan make:action SendEmailAction` and `php artisan make:action SendEmail` produce the same `SendEmail` class.
+
 ##  Creating Actions
 
 You can manually create an action or use the **artisan command**:
 
 ```bash
-php artisan make:action SendEmailAction
+php artisan make:action SendEmail
 ```
 
 This will generate this basic action:
@@ -54,7 +58,7 @@ namespace App\Actions;
 
 use EduLazaro\Laractions\Action;
 
-class SendEmailAction extends Action
+class SendEmail extends Action
 {
     public function handle()
     {
@@ -70,7 +74,7 @@ namespace App\Actions;
 
 use EduLazaro\Laractions\Action;
 
-class SendEmailAction extends Action
+class SendEmail extends Action
 {
     public function handle(string $email, string $subject, string $message)
     {
@@ -82,7 +86,7 @@ class SendEmailAction extends Action
 You can then run the action via the `run` method:
 
 ```php
-SendEmailAction::create()->run('user@example.com', 'Welcome!', 'Hello User');
+SendEmail::create()->run('user@example.com', 'Welcome!', 'Hello User');
 ```
 
 You can customize the constructor. Dependencies will be injected:
@@ -93,7 +97,7 @@ namespace App\Actions;
 use EduLazaro\Laractions\Action;
 use App\Services\MailerService;
 
-class SendEmailAction extends Action
+class SendEmail extends Action
 {
     protected MailerService $mailer;
 
@@ -119,7 +123,7 @@ class SendEmailAction extends Action
 You can run the action as usually via the `run` method:
 
 ```php
-SendEmailAction::create()->run('user@example.com', 'Welcome!', 'Hello User');
+SendEmail::create()->run('user@example.com', 'Welcome!', 'Hello User');
 ```
 
 ##  Creating Model Actions
@@ -127,7 +131,7 @@ SendEmailAction::create()->run('user@example.com', 'Welcome!', 'Hello User');
 You can manually create a model action or use the **artisan command**:
 
 ```bash
-php artisan make:action SendEmailAction --model=User
+php artisan make:action SendEmail --model=User
 ```
 
 This will create the next basic model action:
@@ -159,7 +163,7 @@ class User extends Model
     use HasActions;
 
     protected array $actions = [
-        'send_email' => SendEmailAction::class,
+        'send_email' => SendEmail::class,
     ];
 }
 ```
@@ -173,7 +177,7 @@ $user->action('send_email')->run('user@example.com', 'Welcome!', 'Hello User');
 Alternatively, you can still call the action class directly so you don't have to define the action inside the model:
 
 ```php
-$user->action(SendEmailAction::class)->run('user@example.com', 'Welcome!', 'Hello User');
+$user->action(SendEmail::class)->run('user@example.com', 'Welcome!', 'Hello User');
 
 ```
 
@@ -182,7 +186,7 @@ $user->action(SendEmailAction::class)->run('user@example.com', 'Welcome!', 'Hell
 Laractions provides a flexible `with()` method to set action attributes dynamically:
 
 ```php
-$action = SendEmailAction::create()->with([
+$action = SendEmail::create()->with([
     'email' => 'user@example.com',
     'subject' => 'Welcome!',
     'message' => 'Hello User'
@@ -200,13 +204,13 @@ $this->email;
 When calling an action from a model, the model is automatically injected into the action:
 
 ```php
-$user->action(SendEmailAction::class)->run();
+$user->action(SendEmail::class)->run();
 ```
 
-If the `SendEmailAction` class has a `$user` property, the action will automatically set the model:
+If the `SendEmail` class has a `$user` property, the action will automatically set the model:
 
 ```php
-class SendEmailAction extends Action
+class SendEmail extends Action
 {
     protected User $user; // Automatically injected
 
@@ -222,7 +226,7 @@ class SendEmailAction extends Action
 Laractions allows dispatching actions asynchronously as jobs:
 
 ```php
-$action = SendEmailAction::create()
+$action = SendEmail::create()
     ->queue('high')
     ->delay(10)
     ->retry(5)
@@ -233,7 +237,7 @@ This queues the action instead of executing it immediately. The job will be auto
 You can configure how actions are dispatched as jobs:
 
 ```php
-class SendEmailAction extends Action
+class SendEmail extends Action
 {
     protected int $tries = 5;
     protected ?int $delay = 30;
@@ -246,14 +250,14 @@ class SendEmailAction extends Action
 During unit tests, you can **mock actions**:
 
 ```php
-$user->mockAction(SendEmailAction::class, new class {
+$user->mockAction(SendEmail::class, new class {
     public function run()
     {
         return 'Mocked!';
     }
 });
 
-echo $user->action(SendEmailAction::class)->run(); // Output: 'Mocked!'
+echo $user->action(SendEmail::class)->run(); // Output: 'Mocked!'
 ```
 
 This allows testing without executing real logic.
@@ -271,7 +275,7 @@ php artisan list:actions
 Enable logging for any action:
 
 ```php
-SendEmailAction::create()
+SendEmail::create()
     ->enableLogging()
     ->run('user@example.com', 'Welcome!', 'Hello User');
 ```
@@ -294,7 +298,7 @@ class User extends Model
 Then, call actions like this:
 
 ```php
-$user->act(SendInvoiceAction::class)
+$user->act(SendInvoice::class)
      ->on($order)
      ->trace()
      ->run();
@@ -307,7 +311,7 @@ This automatically sets the actor on the action before executing it.
 Tracing is disabled by default. You can enable it per action like this:
 
 ```php
-SendEmailAction::create()
+SendEmail::create()
     ->trace()
     ->run('user@example.com', 'Welcome!', 'Hello!');
 ```
@@ -315,7 +319,7 @@ SendEmailAction::create()
 You can assign the actor and actionable model like so:
 
 ```php
-SendEmailAction::create()
+SendEmail::create()
     ->actor($user)
     ->on($targetModel)
     ->trace()
@@ -325,7 +329,7 @@ SendEmailAction::create()
 Here is an traced action started by an actor:
 
 ```php
-$user->act(SendInvoiceAction::class)
+$user->act(SendInvoice::class)
      ->on($order)
      ->trace()
      ->run();
