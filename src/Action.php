@@ -260,19 +260,17 @@ abstract class Action
     }
 
     /**
-     * Execute the action.
-     * Runs validation and passes the validated data to `action()`.
+     * Execute the action: resolve arguments by reflection, validate and call handle().
      *
-     * @param array $params The attributes to validate and execute.
-     * @return mixed
+     * Arguments may be positional, named, or an associative array mapped to the
+     * handle() parameters by name. A single array passed to a single-parameter
+     * handle() is forwarded whole as that argument (the "attribute bag").
+     *
+     * @param mixed ...$params Positional, named, or array arguments for handle().
+     * @return mixed The value returned by handle().
      */
     public function run(mixed ...$params): mixed
     {
-        // Allow: run(['k'=>v]) or run('a','b') or run(name:'a')
-        if (count($params) === 1 && array_key_exists(0, $params) && is_array($params[0])) {
-            $params = $params[0];
-        }
-
         if (!method_exists($this, 'handle')) {
             throw new LogicException("The action class " . static::class . " must implement a `handle` method.");
         }
@@ -280,10 +278,27 @@ abstract class Action
         $reflection = new ReflectionMethod($this, 'handle');
         $refParams  = $reflection->getParameters();
 
-        // Detect if $params is associative (PHP named args end up as assoc)
-        $isAssoc    = is_array($params) && !array_is_list($params);
-        $named      = $isAssoc ? $params : [];
-        $positional = $isAssoc ? [] : (is_array($params) ? array_values($params) : []);
+        // The single-parameter "bag": forward the array whole instead of mapping
+        // its keys as named arguments (which would fail for handle(array $attributes)).
+        $singleArrayBag = count($params) === 1
+            && array_key_exists(0, $params)
+            && is_array($params[0])
+            && count($refParams) === 1;
+
+        if ($singleArrayBag) {
+            $named      = [];
+            $positional = [$params[0]];
+        } else {
+            // Allow: run(['k'=>v]) or run('a','b') or run(name:'a')
+            if (count($params) === 1 && array_key_exists(0, $params) && is_array($params[0])) {
+                $params = $params[0];
+            }
+
+            // Detect if $params is associative (PHP named args end up as assoc)
+            $isAssoc    = is_array($params) && !array_is_list($params);
+            $named      = $isAssoc ? $params : [];
+            $positional = $isAssoc ? [] : (is_array($params) ? array_values($params) : []);
+        }
 
         $finalArgs = [];
         $resolved  = [];

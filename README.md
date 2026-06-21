@@ -89,6 +89,48 @@ You can then run the action via the `run` method:
 SendEmail::create()->run('user@example.com', 'Welcome!', 'Hello User');
 ```
 
+### How `run()` maps arguments to `handle()`
+
+`run()` forwards its arguments to `handle()` by reflection. You can call it in three ways:
+
+```php
+// Positional
+SendEmail::create()->run('user@example.com', 'Welcome!', 'Hello User');
+
+// Named arguments
+SendEmail::create()->run(email: 'user@example.com', subject: 'Welcome!', message: 'Hello User');
+
+// Associative array, mapped to parameters by name
+SendEmail::create()->run([
+    'email' => 'user@example.com',
+    'subject' => 'Welcome!',
+    'message' => 'Hello User',
+]);
+```
+
+When `handle()` declares **more than one parameter**, the keys of an associative
+array are matched to the parameter names (the last example above).
+
+When `handle()` declares **a single parameter**, the array is passed through whole
+as that one argument — useful for the "attribute bag" pattern:
+
+```php
+class CreateInvoice extends Action
+{
+    public function handle(array $attributes)
+    {
+        // $attributes === ['concept' => 'x', 'amount' => 10]
+        return $attributes['concept'];
+    }
+}
+
+CreateInvoice::create()->run(['concept' => 'x', 'amount' => 10]);
+```
+
+This mirrors native PHP behaviour (`$fn(['concept' => 'x'])` on `fn(array $a)`):
+the array is the single argument, not a set of named values. Scalars passed to a
+single-parameter `handle()` are forwarded positionally as usual.
+
 You can customize the constructor. Dependencies will be injected:
 
 ```php

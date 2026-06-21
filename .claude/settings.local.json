@@ -1,7 +1,11 @@
 {
   "permissions": {
     "allow": [
-      "Bash(vendor/bin/phpunit *)"
+      "Bash(vendor/bin/phpunit *)",
+      "Bash(git ls-remote *)",
+      "Bash(git log *)",
+      "Bash(grep -iE 'readme|\\\\.md$')",
+      "Bash(git -C /c/Hosts/packages/packages/Edulazaro/Laractions ls-files '*.md')"
     ]
   }
 }
