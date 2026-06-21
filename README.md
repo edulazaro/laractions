@@ -1,3 +1,5 @@
+![Laractions](art/banner.png)
+
 # Laractions - Actions for Laravel
 
 <p align="center">
@@ -376,6 +378,19 @@ $user->act(SendInvoice::class)
      ->trace()
      ->run();
 ```
+
+## Sponsors
+
+Laractions is supported by the following sponsors. Thank you for keeping it growing:
+
+<p>
+  <a href="https://kenodo.com"><img src="art/logo-kenodo.png" width="24" alt="Kenodo"></a>&nbsp;<a href="https://kenodo.com">Kenodo</a>&nbsp;&nbsp;&nbsp;&nbsp;
+  <a href="https://andorradev.com"><img src="art/logo-andorradev.png" width="24" alt="AndorraDev"></a>&nbsp;<a href="https://andorradev.com">AndorraDev</a>
+</p>
+
+## Author
+
+Created by [Edu Lazaro](https://edulazaro.com)
 
 ## License
 
