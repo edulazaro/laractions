@@ -2,6 +2,8 @@
 
 # Laractions - Actions for Laravel
 
+> Encapsulate your business logic into clean, reusable classes that run **synchronously or asynchronously** in Laravel.
+
 <p align="center">
     <a href="https://packagist.org/packages/edulazaro/laractions"><img src="https://img.shields.io/packagist/dt/edulazaro/laractions" alt="Total Downloads"></a>
     <a href="https://packagist.org/packages/edulazaro/laractions"><img src="https://img.shields.io/packagist/v/edulazaro/laractions" alt="Latest Stable Version"></a>
