@@ -20,7 +20,7 @@
 
   <text x="80" y="150" font-family="'DejaVu Sans', Arial, sans-serif" font-size="84" font-weight="800" fill="#ffffff" letter-spacing="-1">Laractions</text>
   <rect x="84" y="172" width="64" height="6" rx="3" fill="#ef4444"/>
-  <text x="80" y="222" font-family="'DejaVu Sans', Arial, sans-serif" font-size="30" font-weight="400" fill="#aeb6c9">Actions for Laravel</text>
+  <text x="80" y="222" font-family="'DejaVu Sans', Arial, sans-serif" font-size="30" font-weight="400" fill="#aeb6c9">Synchronous &amp; asynchronous actions for Laravel</text>
 
   <!-- pie: izquierda = icono GitHub + handle | derecha = dominio -->
   <g transform="translate(80 254)">
