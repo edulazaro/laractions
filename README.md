@@ -381,6 +381,22 @@ $user->act(SendInvoice::class)
      ->run();
 ```
 
+## LaraClaude integration
+
+Laractions is supported by [LaraClaude](https://github.com/edulazaro/laraclaude), a Laravel toolkit plugin for [Claude Code](https://claude.ai/code). It ships two skills that work with your actions:
+
+```
+/lc:generate-action Property/ToggleFeatured
+/lc:extract-action PropertyController:store
+```
+
+- **`/lc:generate-action`** scaffolds a new action class with the right boilerplate and registers it on the corresponding model, following your project's [naming convention](#naming-convention).
+- **`/lc:extract-action`** pulls business logic out of a controller or Livewire component method into a standalone action, and replaces the original code with the action call.
+
+Both skills read the installed Laractions API so they only use what your version actually has, match the conventions of your existing actions, and run a syntax check on the generated class.
+
+Install the plugin in Claude Code with `/plugin install github:edulazaro/laraclaude`.
+
 ## Sponsors
 
 Laractions is supported by the following sponsors. Thank you for keeping it growing:
