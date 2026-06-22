@@ -6,6 +6,7 @@ use EduLazaro\Laractions\Tests\BaseTestCase;
 use EduLazaro\Laractions\Tests\Support\BagAction;
 use EduLazaro\Laractions\Tests\Support\SingleScalarAction;
 use EduLazaro\Laractions\Tests\Support\TestAction;
+use EduLazaro\Laractions\Tests\Support\TypedObjectAction;
 
 class BagActionTest extends BaseTestCase
 {
@@ -57,5 +58,35 @@ class BagActionTest extends BaseTestCase
         $result = $action->run('hello');
 
         $this->assertSame('hello', $result);
+    }
+
+    /**
+     * Regression: a single ASSOCIATIVE array on a single CONCRETE-TYPED param must be mapped
+     * by name (key -> param), NOT forwarded whole as the bag. This is the real-world case
+     * handle(File $file) + run(['file' => $file]), which previously assigned the whole array
+     * to $file and threw a TypeError.
+     *
+     * @test
+     */
+    public function it_maps_an_assoc_array_to_a_single_typed_object_param_instead_of_bagging_it()
+    {
+        $action = TypedObjectAction::create();
+        $payload = new \stdClass();
+        $payload->id = 7;
+
+        $result = $action->run(['payload' => $payload]);
+
+        $this->assertSame($payload, $result);
+    }
+
+    /** @test */
+    public function it_forwards_a_single_typed_object_positionally()
+    {
+        $action = TypedObjectAction::create();
+        $payload = new \stdClass();
+
+        $result = $action->run($payload);
+
+        $this->assertSame($payload, $result);
     }
 }

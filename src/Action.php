@@ -278,12 +278,33 @@ abstract class Action
         $reflection = new ReflectionMethod($this, 'handle');
         $refParams  = $reflection->getParameters();
 
-        // The single-parameter "bag": forward the array whole instead of mapping
-        // its keys as named arguments (which would fail for handle(array $attributes)).
-        $singleArrayBag = count($params) === 1
+        // The single-parameter "bag": forward the array whole as the sole argument, but
+        // ONLY when that parameter actually accepts an array (typed `array`/`iterable`/
+        // `mixed`, or untyped). For a concrete typed param — e.g. handle(File $file) — a
+        // single array is NOT a bag: it falls through to the name/position mapping below,
+        // so run(['file' => $file]) binds $file = $file instead of the whole array.
+        $singleArrayBag = false;
+        if (count($params) === 1
             && array_key_exists(0, $params)
             && is_array($params[0])
-            && count($refParams) === 1;
+            && count($refParams) === 1
+        ) {
+            // The param "accepts the array bag" if it is untyped, or its type is — or, for a
+            // union, includes — array/iterable/mixed. A concrete object/scalar type is NOT a
+            // bag, so its array is mapped by name/position below (fixes handle(File $file)).
+            $bagType = $refParams[0]->getType();
+            $candidateTypes = $bagType instanceof \ReflectionUnionType ? $bagType->getTypes() : [$bagType];
+
+            foreach ($candidateTypes as $candidate) {
+                if ($candidate === null
+                    || ($candidate instanceof \ReflectionNamedType
+                        && in_array($candidate->getName(), ['array', 'iterable', 'mixed'], true))
+                ) {
+                    $singleArrayBag = true;
+                    break;
+                }
+            }
+        }
 
         if ($singleArrayBag) {
             $named      = [];

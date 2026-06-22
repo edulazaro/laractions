@@ -115,8 +115,8 @@ SendEmail::create()->run([
 When `handle()` declares **more than one parameter**, the keys of an associative
 array are matched to the parameter names (the last example above).
 
-When `handle()` declares **a single parameter**, the array is passed through whole
-as that one argument — useful for the "attribute bag" pattern:
+When `handle()` declares **a single `array` (or `iterable`/`mixed`/untyped) parameter**,
+the array is passed through whole as that one argument — the "attribute bag" pattern:
 
 ```php
 class CreateInvoice extends Action
@@ -131,9 +131,18 @@ class CreateInvoice extends Action
 CreateInvoice::create()->run(['concept' => 'x', 'amount' => 10]);
 ```
 
-This mirrors native PHP behaviour (`$fn(['concept' => 'x'])` on `fn(array $a)`):
-the array is the single argument, not a set of named values. Scalars passed to a
-single-parameter `handle()` are forwarded positionally as usual.
+When the single parameter is a **concrete type** (an object or scalar, e.g.
+`handle(File $file)`), a single array is **not** treated as the bag: its keys are mapped
+by name, and a single value is passed positionally — so both of these bind `$file`:
+
+```php
+ProcessFile::create()->run(['file' => $file]);  // mapped by name -> $file = $file
+ProcessFile::create()->run($file);              // positional     -> $file = $file
+```
+
+This mirrors native PHP: an `array` parameter receives the array whole, while a typed
+parameter receives the matching value, never the wrapping array. (A union that includes
+`array`/`iterable` — e.g. `array|Foo` — still receives the bag.)
 
 You can customize the constructor. Dependencies will be injected:
 
