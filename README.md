@@ -2,12 +2,15 @@
 
 # Laractions - Actions for Laravel
 
-> Encapsulate your business logic into clean, reusable classes that run **synchronously or asynchronously** in Laravel.
-
 <p align="center">
-    <a href="https://packagist.org/packages/edulazaro/laractions"><img src="https://img.shields.io/packagist/dt/edulazaro/laractions" alt="Total Downloads"></a>
+    <a href="https://github.com/edulazaro/laractions/actions/workflows/tests.yml"><img src="https://github.com/edulazaro/laractions/actions/workflows/tests.yml/badge.svg" alt="Tests"></a>
     <a href="https://packagist.org/packages/edulazaro/laractions"><img src="https://img.shields.io/packagist/v/edulazaro/laractions" alt="Latest Stable Version"></a>
+    <a href="https://packagist.org/packages/edulazaro/laractions"><img src="https://img.shields.io/packagist/dt/edulazaro/laractions" alt="Total Downloads"></a>
+    <a href="https://packagist.org/packages/edulazaro/laractions"><img src="https://img.shields.io/packagist/php-v/edulazaro/laractions" alt="PHP Version"></a>
+    <a href="https://github.com/edulazaro/laractions/blob/main/LICENSE.md"><img src="https://img.shields.io/packagist/l/edulazaro/laractions" alt="License"></a>
 </p>
+
+> Encapsulate your business logic into clean, reusable classes that run **synchronously or asynchronously** in Laravel.
 
 ## Introduction
 
@@ -35,13 +38,13 @@ Instead of bloating **controllers**, **models**, or **services**, Laractions kee
 
 ## Installation
 
-Install via Composer:
+Laractions requires **PHP 8.2+** and **Laravel 11+**. Install via Composer:
 
 ```bash
 composer require edulazaro/laractions
 ```
 
-Once installed, the package will be available in your Laravel application.
+Once installed, the package will be available in your Laravel application: the service provider is auto discovered and there is nothing to publish to start writing actions.
 
 ## Naming Convention
 

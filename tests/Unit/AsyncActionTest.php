@@ -18,8 +18,7 @@ class AsyncActionTest extends BaseTestCase
 {
     use WithFaker;
 
-    /** @test */
-    public function it_can_dispatch_and_execute_an_async_action()
+    public function test_it_can_dispatch_and_execute_an_async_action()
     {
         Queue::fake();
 
@@ -36,8 +35,7 @@ class AsyncActionTest extends BaseTestCase
         });
     }
 
-    /** @test */
-    public function it_logs_failed_job_execution()
+    public function test_it_logs_failed_job_execution()
     {
         Log::shouldReceive('error')
             ->once()
@@ -51,8 +49,7 @@ class AsyncActionTest extends BaseTestCase
         $job->failed(new \Exception('Test failure'));
     }
 
-    /** @test */
-    public function it_can_set_queue_and_delay()
+    public function test_it_can_set_queue_and_delay()
     {
         Queue::fake();
 
@@ -64,8 +61,7 @@ class AsyncActionTest extends BaseTestCase
         });
     }
 
-    /** @test */
-    public function it_throws_validation_exception_for_invalid_data()
+    public function test_it_throws_validation_exception_for_invalid_data()
     {
         $this->expectException(ValidationException::class);
 
@@ -73,8 +69,7 @@ class AsyncActionTest extends BaseTestCase
         $action->dispatch(['name' => 'Alice', 'email' => 'invalid-email']);
     }
 
-    /** @test */
-    public function it_can_retry_failed_jobs()
+    public function test_it_can_retry_failed_jobs()
     {
         Queue::fake();
 

@@ -3,7 +3,6 @@
 namespace EduLazaro\Laractions\Tests\Support;
 
 use EduLazaro\Laractions\Action;
-use EduLazaro\Laractions\Concerns\IsAsync;
 use EduLazaro\Laractions\Tests\Support\TestEntity;
 use Illuminate\Contracts\Queue\ShouldQueue;
 

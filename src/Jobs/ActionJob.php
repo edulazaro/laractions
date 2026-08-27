@@ -8,6 +8,7 @@ use Illuminate\Foundation\Bus\Dispatchable;
 use Illuminate\Queue\InteractsWithQueue;
 use EduLazaro\Laractions\Action;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Illuminate\Support\Facades\Log;
 use Throwable;
 
@@ -24,8 +25,8 @@ class ActionJob implements ShouldQueue
     /**  @var string|null The class name of the actionable model, if applicable */
     public ?string $actionableType = null;
 
-    /** @var int|null The primary key of the actionable model, if applicable */
-    public ?int $actionableId = null;
+    /** @var int|string|null The primary key of the actionable model, if applicable */
+    public int|string|null $actionableId = null;
 
     /**  @var array The parameters passed to the action  */
     public array $params = [];
@@ -87,8 +88,17 @@ class ActionJob implements ShouldQueue
         $action = $this->action ? $this->action : app($this->actionClass);
 
 
-        if ($this->actionableType && $this->actionableId) {
-            $action->on($this->actionableType::find($this->actionableId));
+        if ($this->actionableType && $this->actionableId !== null) {
+            $actionable = $this->actionableType::find($this->actionableId);
+
+            if (!$actionable) {
+                throw (new ModelNotFoundException)->setModel(
+                    $this->actionableType,
+                    [$this->actionableId]
+                );
+            }
+
+            $action->on($actionable);
         }
 
         $action->run($this->params);

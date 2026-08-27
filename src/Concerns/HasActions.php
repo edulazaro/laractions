@@ -10,8 +10,15 @@ use Exception;
  */
 trait HasActions
 {
+    /** @var array Mocked action instances, only honoured while running tests */
+    protected array $mockedActions = [];
+
     /**
      * Mock an action instance for a specific action class.
+     *
+     * @deprecated Bind the action in the container instead, which also covers
+     *             actions created with create() or act():
+     *             $this->app->bind(SendEmail::class, fn () => $double);
      *
      * @param string $actionClass The fully qualified class name of the action.
      * @param mixed $mockAction The mocked action instance.
@@ -44,7 +51,10 @@ trait HasActions
         }
 
         if (App::runningUnitTests() && isset($this->mockedActions[$actionClass])) {
-            return $this->mockedActions[$actionClass]->on($this);
+            $mockAction = $this->mockedActions[$actionClass];
+
+            // A test double is not required to know how to bind itself to the model.
+            return method_exists($mockAction, 'on') ? $mockAction->on($this) : $mockAction;
         }
 
         return App::makeWith($actionClass, $params)->on($this);

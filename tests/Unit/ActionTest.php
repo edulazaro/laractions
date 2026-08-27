@@ -14,15 +14,13 @@ use Illuminate\Support\Facades\Schema;
 
 class ActionTest extends BaseTestCase
 {
-    /** @test */
-    public function it_can_create_an_action_instance()
+    public function test_it_can_create_an_action_instance()
     {
         $action = TestAction::create();
         $this->assertInstanceOf(TestAction::class, $action);
     }
 
-    /** @test */
-    public function it_can_run_a_standalone_action_with_valid_data()
+    public function test_it_can_run_a_standalone_action_with_valid_data()
     {
         $action = TestAction::create();
         $result = $action->run(['name' => 'John Doe', 'email' => 'john@example.com']);
@@ -30,8 +28,7 @@ class ActionTest extends BaseTestCase
         $this->assertEquals('John Doe_john@example.com', $result);
     }
 
-    /** @test */
-    public function it_throws_validation_exception_for_invalid_data()
+    public function test_it_throws_validation_exception_for_invalid_data()
     {
         $this->expectException(ValidationException::class);
 
@@ -39,8 +36,7 @@ class ActionTest extends BaseTestCase
         $action->run(['name' => 'John Doe', 'email' => 'invalid-email']);
     }
 
-    /** @test */
-    public function it_can_validate_and_run_multiply_numbers_action()
+    public function test_it_can_validate_and_run_multiply_numbers_action()
     {
         $action = MultiplyNumbersAction::create();
         $result = $action->run(['a' => 5, 'b' => 3]);
@@ -48,8 +44,7 @@ class ActionTest extends BaseTestCase
         $this->assertEquals(15, $result);
     }
 
-    /** @test */
-    public function it_throws_validation_exception_for_invalid_multiply_numbers_action()
+    public function test_it_throws_validation_exception_for_invalid_multiply_numbers_action()
     {
         $this->expectException(ValidationException::class);
 
@@ -57,8 +52,7 @@ class ActionTest extends BaseTestCase
         $action->run(['a' => 'five', 'b' => 3]); // 'a' is not numeric
     }
 
-    /** @test */
-    public function it_sets_and_gets_an_actionable_entity()
+    public function test_it_sets_and_gets_an_actionable_entity()
     {
         $entity = new TestEntity();
         $action = TestAction::create()->on($entity);
@@ -66,8 +60,7 @@ class ActionTest extends BaseTestCase
         $this->assertSame($entity, $action->getActionable());
     }
 
-    /** @test */
-    public function it_can_set_parameters_using_with_method()
+    public function test_it_can_set_parameters_using_with_method()
     {
         $action = TestAction::create();
         $action->with(['foo' => 'bar']);
@@ -75,8 +68,7 @@ class ActionTest extends BaseTestCase
         $this->assertEquals('bar', $action->foo);
     }
 
-    /** @test */
-    public function it_can_set_parameters_using_with_method_named_params()
+    public function test_it_can_set_parameters_using_with_method_named_params()
     {
         $action = TestAction::create();
         $action->with(foo: 'bar');
@@ -85,8 +77,7 @@ class ActionTest extends BaseTestCase
     }
 
 
-    /** @test */
-    public function it_can_execute_action_using_action_method_with_class()
+    public function test_it_can_execute_action_using_action_method_with_class()
     {
         $entity = new TestEntity();
 
@@ -96,8 +87,7 @@ class ActionTest extends BaseTestCase
         $this->assertEquals('Alice_alice@example.com', $result);
     }
 
-    /** @test */
-    public function it_can_execute_action_using_action_method_with_key()
+    public function test_it_can_execute_action_using_action_method_with_key()
     {
         $entity = new TestEntity();
         $result = $entity->action('test_action')->run(['name' => 'Bob', 'email' => 'bob@example.com']);
@@ -105,8 +95,7 @@ class ActionTest extends BaseTestCase
         $this->assertEquals('Bob_bob@example.com', $result);
     }
 
-    /** @test */
-    public function it_can_execute_action_using_action_method_with_key_on_extended_action()
+    public function test_it_can_execute_action_using_action_method_with_key_on_extended_action()
     {
         $entity = new TestEntity();
         $result = $entity->action('extended_test_action')->run(['name' => 'Bob', 'email' => 'bob@example.com']);
@@ -114,8 +103,7 @@ class ActionTest extends BaseTestCase
         $this->assertEquals('Bob_bob@example.com_ok', $result);
     }
 
-    /** @test */
-    public function it_can_execute_action_using_action_method_with_named_params()
+    public function test_it_can_execute_action_using_action_method_with_named_params()
     {
         $entity = new TestEntity();
 
@@ -125,8 +113,7 @@ class ActionTest extends BaseTestCase
         $this->assertEquals('Bob_bob@example.com', $result);
     }
 
-    /** @test */
-    public function it_can_resolve_dynamic_actionable_name()
+    public function test_it_can_resolve_dynamic_actionable_name()
     {
         $entity = new TestEntity();
         $action = TestAction::create()->on($entity);
@@ -134,8 +121,7 @@ class ActionTest extends BaseTestCase
         $this->assertSame($entity, $action->getEntity());
     }
 
-    /** @test */
-    public function it_can_resolve_dynamic_actionable_name_in_extended_action()
+    public function test_it_can_resolve_dynamic_actionable_name_in_extended_action()
     {
         $entity = new TestEntity();
         $action = ExtendedTestAction::create()->on($entity);
@@ -143,8 +129,7 @@ class ActionTest extends BaseTestCase
         $this->assertSame($entity, $action->getEntity());
     }
 
-    /** @test */
-    public function it_can_resolve_actions_in_model_actions_array()
+    public function test_it_can_resolve_actions_in_model_actions_array()
     {
         $entity = new TestEntity();
         $result =  $entity->action('test_action')->run(['name' => 'Bob', 'email' => 'bob@example.com']);
@@ -152,8 +137,7 @@ class ActionTest extends BaseTestCase
         $this->assertEquals('Bob_bob@example.com', $result);
     }
 
-    /** @test */
-    public function it_can_resolve_actions_in_model_actions_array_with_named_params()
+    public function test_it_can_resolve_actions_in_model_actions_array_with_named_params()
     {
         $entity = new TestEntity();
         $result =  $entity->action('test_action')->run(name: 'Bob', email: 'bob@example.com');
@@ -161,8 +145,7 @@ class ActionTest extends BaseTestCase
         $this->assertEquals('Bob_bob@example.com', $result);
     }
 
-    /** @test */
-    public function it_can_resolve_actions_in_model_actions_array_with_standard_params()
+    public function test_it_can_resolve_actions_in_model_actions_array_with_standard_params()
     {
         $entity = new TestEntity();
         $result =  $entity->action('test_action')->run( 'Bob', 'bob@example.com');
@@ -170,8 +153,7 @@ class ActionTest extends BaseTestCase
         $this->assertEquals('Bob_bob@example.com', $result);
     }
 
-    /** @test */
-    public function it_can_resolve_actions_in_model_actions_array_with_standard_params_keeping_default_values()
+    public function test_it_can_resolve_actions_in_model_actions_array_with_standard_params_keeping_default_values()
     {
         $entity = new TestEntity();
         $result =  $entity->action('test_action_default_value')->run( 'Bob');
@@ -179,8 +161,7 @@ class ActionTest extends BaseTestCase
         $this->assertEquals('Bob_bob@example.com', $result);
     }
 
-    /** @test */
-    public function it_does_not_trace_unless_explicitly_enabled()
+    public function test_it_does_not_trace_unless_explicitly_enabled()
     {
         $entity = TestModelEntity::create();
 
@@ -191,8 +172,7 @@ class ActionTest extends BaseTestCase
         ]);
     }
 
-    /** @test */
-    public function it_traces_action_when_trace_is_enabled()
+    public function test_it_traces_action_when_trace_is_enabled()
     {
         $entity = TestModelEntity::create();
 
@@ -205,8 +185,7 @@ class ActionTest extends BaseTestCase
         ]);
     }
 
-    /** @test */
-    public function it_stores_actor_and_target_when_tracing()
+    public function test_it_stores_actor_and_target_when_tracing()
     {
         $entity = TestModelEntity::create();
 
@@ -229,8 +208,7 @@ class ActionTest extends BaseTestCase
         $this->assertEquals($entity->id, $trace->target_id); // optional but precise
     }
 
-    /** @test */
-    public function it_can_run_with_a_single_named_argument()
+    public function test_it_can_run_with_a_single_named_argument()
     {
         $action = \EduLazaro\Laractions\Tests\Support\TestActionDefaultValue::create();
 
