@@ -46,9 +46,16 @@ composer require edulazaro/laractions
 
 Once installed, the package will be available in your Laravel application: the service provider is auto discovered and there is nothing to publish to start writing actions.
 
-## Naming Convention
+## Naming
 
-Action class names drop the `Action` suffix because the `App\Actions\*` namespace already carries the intent — just like Laravel uses `App\Jobs\SendEmail` rather than `App\Jobs\SendEmailJob`. The `make:action` generator strips a trailing "Action" automatically, so both `php artisan make:action SendEmailAction` and `php artisan make:action SendEmail` produce the same `SendEmail` class.
+Name the class whatever you want to read at the call site. `make:action` uses the name you give it, unchanged:
+
+```bash
+php artisan make:action SendEmail        # class SendEmail
+php artisan make:action SendEmailAction  # class SendEmailAction
+```
+
+Both conventions are in use. `SendEmail` reads well because the `App\Actions\*` namespace already carries the intent, the way Laravel writes `App\Jobs\SendEmail` rather than `SendEmailJob`. `SendEmailAction` reads well because the suffix survives the import, and at the call site you can tell an action from a model without looking it up. Pick one and keep it.
 
 ##  Creating Actions
 
