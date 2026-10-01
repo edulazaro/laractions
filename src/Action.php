@@ -51,54 +51,6 @@ abstract class Action
     }
 
     /**
-     * Explains, instead of PHP's bare type error, why a single array did not bind.
-     *
-     * A single associative array passed to a handle() with several parameters is spread
-     * over them by key. That is the package's main calling style, and it is right when the
-     * keys ARE the parameters. When none of them is, the array was meant as ONE argument
-     * (handle(array $data, ?Monitor $monitor = null) called as run([...])), the first
-     * parameter is left empty, and PHP's message ("must be of type array, null given")
-     * does not say why. Only that case is reported, and as a TypeError, the error it
-     * already raised, so nothing that catches it changes and no call that works today is
-     * affected.
-     *
-     * @param array<int, \ReflectionParameter> $refParams
-     * @param array<string, mixed> $array
-     * @param array<string, mixed> $resolved
-     * @return void
-     *
-     * @throws \TypeError
-     */
-    protected function explainUnboundArray(array $refParams, array $array, array $resolved): void
-    {
-        $names = array_map(fn (\ReflectionParameter $rp) => $rp->getName(), $refParams);
-
-        if (array_intersect(array_keys($array), $names) !== []) {
-            return;
-        }
-
-        foreach ($refParams as $rp) {
-            $type = $rp->getType();
-
-            if ($resolved[$rp->getName()] !== null || $rp->isDefaultValueAvailable() || $type === null || $type->allowsNull()) {
-                continue;
-            }
-
-            $keys = implode(', ', array_slice(array_keys($array), 0, 5)) . (count($array) > 5 ? ', ...' : '');
-
-            throw new \TypeError(sprintf(
-                '%s::handle() received a single array whose keys (%s) match none of its parameters (%s), so $%s was left empty. '
-                . 'If the array is meant as one argument, pass it by name: run(%s: [...]).',
-                static::class,
-                $keys,
-                '$' . implode(', $', $names),
-                $rp->getName(),
-                $rp->getName(),
-            ));
-        }
-    }
-
-    /**
      * Create a new instance via Laravel's service container.
      *
      * @param mixed ...$params Constructor arguments.
@@ -354,8 +306,6 @@ abstract class Action
             }
         }
 
-        // Set when a single array was spread over handle()'s parameters by key, so a
-        // failure to bind can say that is what happened.
         $spreadArray = null;
 
         if ($singleArrayBag) {
@@ -400,8 +350,6 @@ abstract class Action
         // Validate after resolving defaults
         $this->validate($resolved);
 
-        // After validation, so an action with rules still answers with its validation
-        // error exactly as before; this only replaces the TypeError handle() would raise.
         if ($spreadArray !== null && !array_is_list($spreadArray)) {
             $this->explainUnboundArray($refParams, $spreadArray, $resolved);
         }
@@ -416,6 +364,45 @@ abstract class Action
             return $result;
         } catch (Throwable $e) {
             throw $e;
+        }
+    }
+
+    /**
+     * Throw a descriptive TypeError when a single array matches none of handle()'s parameters.
+     *
+     * @param array $refParams The parameters of handle().
+     * @param array $array The array passed to run().
+     * @param array $resolved The resolved arguments, keyed by parameter name.
+     * @return void
+     *
+     * @throws \TypeError
+     */
+    protected function explainUnboundArray(array $refParams, array $array, array $resolved): void
+    {
+        $names = array_map(fn (\ReflectionParameter $rp) => $rp->getName(), $refParams);
+
+        if (array_intersect(array_keys($array), $names) !== []) {
+            return;
+        }
+
+        foreach ($refParams as $rp) {
+            $type = $rp->getType();
+
+            if ($resolved[$rp->getName()] !== null || $rp->isDefaultValueAvailable() || $type === null || $type->allowsNull()) {
+                continue;
+            }
+
+            $keys = implode(', ', array_slice(array_keys($array), 0, 5)) . (count($array) > 5 ? ', ...' : '');
+
+            throw new \TypeError(sprintf(
+                '%s::handle() received a single array whose keys (%s) match none of its parameters (%s), so $%s was left empty. '
+                . 'If the array is meant as one argument, pass it by name: run(%s: [...]).',
+                static::class,
+                $keys,
+                '$' . implode(', $', $names),
+                $rp->getName(),
+                $rp->getName(),
+            ));
         }
     }
 

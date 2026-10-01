@@ -6,10 +6,6 @@ use EduLazaro\Laractions\Tests\BaseTestCase;
 use EduLazaro\Laractions\Tests\Support\DataAndOptionAction;
 use EduLazaro\Laractions\Tests\Support\TestAction;
 
-/**
- * A single array whose keys match none of handle()'s parameters, on a handle() with
- * several of them, is explained instead of failing with PHP's bare type error.
- */
 class UnboundArrayTest extends BaseTestCase
 {
     public function test_it_explains_an_array_that_matches_no_parameter()
@@ -45,8 +41,6 @@ class UnboundArrayTest extends BaseTestCase
 
     public function test_a_partial_match_keeps_the_existing_behaviour()
     {
-        // A key that IS a parameter means the array was meant to be spread, so the
-        // missing one fails with PHP's own error, as it always has.
         $this->expectException(\TypeError::class);
         $this->expectExceptionMessageMatches('/must be of type array, null given/');
 
